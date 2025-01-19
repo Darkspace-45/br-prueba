@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet, FlatList } from "react-native";
 import { db } from "../config/Config";
 import { ref, onValue } from "firebase/database";
-import { Ionicons } from "@expo/vector-icons";
 
 interface Producto {
     id: string;
@@ -14,13 +13,13 @@ interface Producto {
 export default function ProductosScreen() {
     const [productos, setProductos] = useState<Producto[]>([]);
 
-    // Función para obtener los productos desde Firebase
     useEffect(() => {
         const productosRef = ref(db, "productos");
 
         const unsubscribe = onValue(productosRef, (snapshot) => {
             const data = snapshot.val();
-            console.log("Datos desde Firebase:", data);  // Verificar los datos obtenidos
+            console.log("Datos desde Firebase:", data);
+
             if (data) {
                 const productosList: Producto[] = [];
                 Object.keys(data).forEach((key) => {
@@ -32,8 +31,10 @@ export default function ProductosScreen() {
                         precio_final: producto.precio_final || 0,
                     });
                 });
+                console.log("Productos mapeados:", productosList);
                 setProductos(productosList);
             } else {
+                console.log("No se encontraron productos.");
                 setProductos([]);
             }
         });
@@ -64,15 +65,11 @@ export default function ProductosScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Lista de Productos</Text>
-            {productos.length > 0 ? (
                 <FlatList
                     data={productos}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => <ProductoItem producto={item} />}
                 />
-            ) : (
-                <Text>No hay productos disponibles.</Text>
-            )}
         </View>
     );
 }
