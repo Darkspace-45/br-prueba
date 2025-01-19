@@ -1,4 +1,3 @@
-// screens/OperacionesScreen.js
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { db } from "../config/Config";
@@ -9,9 +8,10 @@ export default function OperacionesScreen() {
     const [producto, setProducto] = useState("");
     const [precio, setPrecio] = useState("");
     const [cantidad, setCantidad] = useState("");
+    const [id, setId] = useState("");
 
     const handleGuardar = async () => {
-        if (!producto || !precio || !cantidad) {
+        if (!producto || !precio || !cantidad || !id) {
             Alert.alert("Error", "Todos los campos son obligatorios.");
             return;
         }
@@ -39,7 +39,7 @@ export default function OperacionesScreen() {
         const precioFinal = parseFloat(precio) * 1.15;
 
         try {
-            const productosRef = ref(db, "productos" + producto);
+            const productosRef = ref(db, "productos/" + id);
             await push(productosRef, {
                 producto,
                 precio: parseFloat(precio),
@@ -48,6 +48,7 @@ export default function OperacionesScreen() {
             });
 
             Alert.alert("Éxito", "Producto guardado correctamente.");
+            setId("");
             setProducto("");
             setPrecio("");
             setCantidad("");
@@ -60,7 +61,16 @@ export default function OperacionesScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Gestión de Productos</Text>
-
+            <View style={styles.inputContainer}>
+                <Ionicons name="id-card" size={20} color="#666" style={styles.icon} />
+                <TextInput
+                    style={styles.input}
+                    placeholder="ID"
+                    keyboardType="numeric"
+                    value={id}
+                    onChangeText={setId}
+                />
+            </View>
             <View style={styles.inputContainer}>
                 <Ionicons name="pricetag" size={20} color="#666" style={styles.icon} />
                 <TextInput
@@ -92,7 +102,6 @@ export default function OperacionesScreen() {
                     onChangeText={setCantidad}
                 />
             </View>
-
             <TouchableOpacity style={styles.button} onPress={handleGuardar}>
                 <Text style={styles.buttonText}>Guardar Producto</Text>
             </TouchableOpacity>

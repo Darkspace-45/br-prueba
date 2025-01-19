@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, FlatList, ActivityIndicator, Modal } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 interface Oferta {
@@ -12,15 +12,19 @@ export default function OfertaScreen() {
     const [ofertas, setOfertas] = useState<Oferta[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('https://jritsqmet.github.io/web-api/productos2.json')
             .then((response) => response.json())
             .then((data) => {
-                setOfertas(data);
+                console.log(data);
+                setOfertas(data); 
                 setLoading(false);
             })
             .catch((err) => {
+                console.error(err);
                 setError('Error al cargar los productos.');
                 setLoading(false);
             });
@@ -34,7 +38,10 @@ export default function OfertaScreen() {
                         { text: 'OK' },
                         {
                             text: 'Ver Imagen',
-                            onPress: () => Alert.alert('Imagen', '', [{ text: 'Cerrar', onPress: () => { } }]),
+                            onPress: () => {
+                                setSelectedImage(oferta.imagen);
+                                setModalVisible(true);
+                            },
                         },
                     ])
                 }
@@ -42,7 +49,6 @@ export default function OfertaScreen() {
                 <View style={styles.item}>
                     <Text style={styles.productName}>{oferta.nombre}</Text>
                     <Text style={styles.productPrice}>${oferta.precio_final}</Text>
-                    <Image source={{ uri: oferta.imagen }} style={styles.image} />
                 </View>
             </TouchableOpacity>
         );
@@ -67,12 +73,28 @@ export default function OfertaScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Productos en Oferta</Text>
+            <Text style={styles.header}>PRODUCTOS EN OFERTA</Text>
             <FlatList
                 data={ofertas}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => <OfertaItem oferta={item} />}
             />
+
+            <Modal visible={modalVisible} animationType="fade" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {selectedImage && (
+                            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+                        )}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -112,11 +134,6 @@ const styles = StyleSheet.create({
         color: '#007bff',
         marginVertical: 10,
     },
-    image: {
-        width: 150,
-        height: 150,
-        resizeMode: 'contain',
-    },
     loadingText: {
         marginTop: 20,
         fontSize: 16,
@@ -127,5 +144,32 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
         color: 'red',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalImage: {
+        width: 300,
+        height: 300,
+        resizeMode: 'contain',
+    },
+    closeButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#007bff',
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
