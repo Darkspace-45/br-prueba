@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { db } from "../config/Config";
-import { ref, push } from "firebase/database";
+import { ref, set } from "firebase/database";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function OperacionesScreen() {
@@ -40,7 +40,7 @@ export default function OperacionesScreen() {
 
         try {
             const productosRef = ref(db, "productos/" + id);
-            await push(productosRef, {
+            await set(productosRef, {
                 producto,
                 precio: parseFloat(precio),
                 cantidad: parseInt(cantidad),
